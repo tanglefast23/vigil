@@ -6,11 +6,13 @@
 
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
+    // Use regular client to verify authentication
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,6 +22,7 @@ export async function POST() {
 
     const userId = user.id;
 
+    // Use admin client for data insertion (bypasses RLS)
     // Generate 30 days of recovery data
     const recoveryData = Array.from({ length: 30 }, (_, i) => {
       const date = new Date();
@@ -92,33 +95,36 @@ export async function POST() {
       };
     });
 
-    // Insert all test data
-    const { error: recoveryError } = await supabase
+    // Insert all test data using admin client (bypasses RLS)
+    const { error: recoveryError } = await supabaseAdmin
       .from('health_recovery')
       .upsert(recoveryData, { onConflict: 'user_id,external_id' });
 
     if (recoveryError) {
       console.error('Recovery insert error:', recoveryError);
+      return NextResponse.json({ error: 'Failed to insert recovery data', details: recoveryError.message }, { status: 500 });
     }
 
-    const { error: workoutError } = await supabase
+    const { error: workoutError } = await supabaseAdmin
       .from('health_workouts')
       .upsert(workoutData, { onConflict: 'user_id,external_id' });
 
     if (workoutError) {
       console.error('Workout insert error:', workoutError);
+      return NextResponse.json({ error: 'Failed to insert workout data', details: workoutError.message }, { status: 500 });
     }
 
-    const { error: sleepError } = await supabase
+    const { error: sleepError } = await supabaseAdmin
       .from('health_sleep')
       .upsert(sleepData, { onConflict: 'user_id,external_id' });
 
     if (sleepError) {
       console.error('Sleep insert error:', sleepError);
+      return NextResponse.json({ error: 'Failed to insert sleep data', details: sleepError.message }, { status: 500 });
     }
 
-    // Update sync status
-    await supabase.from('health_sync_status').upsert({
+    // Update sync status using admin client
+    await supabaseAdmin.from('health_sync_status').upsert({
       user_id: userId,
       provider: 'test_data',
       last_successful_sync: new Date().toISOString(),
@@ -148,6 +154,7 @@ export async function POST() {
 // Also support DELETE to clear test data
 export async function DELETE() {
   try {
+    // Use regular client for authentication check
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -157,11 +164,11 @@ export async function DELETE() {
 
     const userId = user.id;
 
-    // Delete all test data for this user
-    await supabase.from('health_recovery').delete().eq('user_id', userId).eq('source', 'test_data');
-    await supabase.from('health_workouts').delete().eq('user_id', userId).eq('source', 'test_data');
-    await supabase.from('health_sleep').delete().eq('user_id', userId).eq('source', 'test_data');
-    await supabase.from('health_sync_status').delete().eq('user_id', userId).eq('provider', 'test_data');
+    // Delete all test data for this user using admin client (bypasses RLS)
+    await supabaseAdmin.from('health_recovery').delete().eq('user_id', userId).eq('source', 'test_data');
+    await supabaseAdmin.from('health_workouts').delete().eq('user_id', userId).eq('source', 'test_data');
+    await supabaseAdmin.from('health_sleep').delete().eq('user_id', userId).eq('source', 'test_data');
+    await supabaseAdmin.from('health_sync_status').delete().eq('user_id', userId).eq('provider', 'test_data');
 
     return NextResponse.json({
       success: true,

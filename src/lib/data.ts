@@ -1,20 +1,14 @@
 /**
  * Data fetching utilities for the health dashboard
  * Uses React cache for request deduplication
+ * Uses server client with cookies for RLS to work properly
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { cache } from 'react';
-
-function getSupabaseClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export const getRecentWorkouts = cache(async (userId: string, limit = 10) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from('health_workouts')
     .select('*')
@@ -25,7 +19,7 @@ export const getRecentWorkouts = cache(async (userId: string, limit = 10) => {
 });
 
 export const getRecoveryData = cache(async (userId: string, days = 30) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
@@ -39,7 +33,7 @@ export const getRecoveryData = cache(async (userId: string, days = 30) => {
 });
 
 export const getSleepData = cache(async (userId: string, days = 30) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
@@ -53,7 +47,7 @@ export const getSleepData = cache(async (userId: string, days = 30) => {
 });
 
 export const getSyncStatus = cache(async (userId: string) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
 
   // Check for whoop sync status first, then test_data
   let { data: syncStatus } = await supabase
@@ -85,7 +79,7 @@ export const getSyncStatus = cache(async (userId: string) => {
 });
 
 export const getLatestRecovery = cache(async (userId: string) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from('health_recovery')
     .select('*')
@@ -97,7 +91,7 @@ export const getLatestRecovery = cache(async (userId: string) => {
 });
 
 export const getLatestSleep = cache(async (userId: string) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from('health_sleep')
     .select('*')
@@ -109,7 +103,7 @@ export const getLatestSleep = cache(async (userId: string) => {
 });
 
 export const getWeeklyStats = cache(async (userId: string) => {
-  const supabase = getSupabaseClient();
+  const supabase = await createSupabaseServerClient();
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
 
