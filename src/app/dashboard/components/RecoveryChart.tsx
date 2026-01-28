@@ -74,13 +74,13 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
               border: '1px solid #e5e7eb',
             }}
             labelStyle={{ color: '#111' }}
-            formatter={(value: number, name: string) => {
+            formatter={(value, name) => {
               const labels: Record<string, string> = {
                 score: 'Recovery',
                 hrv: 'HRV (ms)',
                 rhr: 'Resting HR',
               };
-              return [value, labels[name] || name];
+              return [value ?? 0, labels[String(name)] || String(name)];
             }}
           />
           <ReferenceLine
