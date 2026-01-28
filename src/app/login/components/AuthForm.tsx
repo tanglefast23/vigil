@@ -1,6 +1,7 @@
 /**
  * Authentication Form Component
  * Handles email/password and magic link sign in
+ * Based on Pencil design: Login Page > loginForm
  */
 
 'use client';
@@ -8,6 +9,7 @@
 import { useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Message {
   type: 'error' | 'success';
@@ -67,27 +69,31 @@ export function AuthForm() {
   };
 
   return (
-    <form onSubmit={handleEmailLogin} className="space-y-6">
+    <form onSubmit={handleEmailLogin} className="flex flex-col gap-5">
       {message && (
         <div
-          className={`p-4 rounded-md ${
+          className={`p-4 rounded-[var(--radius-md)] text-sm ${
             message.type === 'error'
-              ? 'bg-red-50 text-red-800'
-              : 'bg-green-50 text-green-800'
+              ? 'bg-[var(--error-tint)] text-[var(--error)]'
+              : 'bg-[var(--success-tint)] text-[var(--success)]'
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <div>
+      {/* Email Field */}
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
+          className="text-xs font-medium text-[var(--text-tertiary)]"
         >
-          Email address
+          Email
         </label>
-        <div className="mt-1">
+        <div className="flex items-center gap-3 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] px-4 py-3.5 focus-within:border-[var(--accent)] transition-colors">
+          <span className="icon-lucide text-lg text-[var(--text-muted)]">
+            mail
+          </span>
           <input
             id="email"
             name="email"
@@ -96,20 +102,25 @@ export function AuthForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+            placeholder="Enter your email"
+            className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] outline-none"
           />
         </div>
       </div>
 
+      {/* Password Field */}
       {!isMagicLink && (
-        <div>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
+            className="text-xs font-medium text-[var(--text-tertiary)]"
           >
             Password
           </label>
-          <div className="mt-1">
+          <div className="flex items-center gap-3 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] px-4 py-3.5 focus-within:border-[var(--accent)] transition-colors">
+            <span className="icon-lucide text-lg text-[var(--text-muted)]">
+              lock
+            </span>
             <input
               id="password"
               name="password"
@@ -118,63 +129,100 @@ export function AuthForm() {
               required={!isMagicLink}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              placeholder="Enter your password"
+              className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] outline-none"
             />
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <input
-            id="magic-link"
-            name="magic-link"
-            type="checkbox"
-            checked={isMagicLink}
-            onChange={(e) => setIsMagicLink(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <label
-            htmlFor="magic-link"
-            className="ml-2 block text-sm text-gray-900"
-          >
-            Send me a magic link
+      {/* Remember & Forgot */}
+      {!isMagicLink && (
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded bg-[var(--bg-elevated)] border border-[var(--border-default)] accent-[var(--accent)]"
+            />
+            <span className="text-sm text-[var(--text-secondary)]">
+              Remember me
+            </span>
           </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-[var(--accent)] hover:underline"
+          >
+            Forgot password?
+          </Link>
         </div>
+      )}
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="gradient-accent flex items-center justify-center py-3.5 rounded-[var(--radius-md)] text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoading ? (
+          <svg
+            className="animate-spin h-5 w-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        ) : (
+          'Sign In'
+        )}
+      </button>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-px bg-[var(--border-default)]" />
+        <span className="text-xs text-[var(--text-muted)]">or</span>
+        <div className="flex-1 h-px bg-[var(--border-default)]" />
       </div>
 
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      {/* Magic Link Button */}
+      <button
+        type="button"
+        onClick={() => {
+          setIsMagicLink(true);
+          if (email) {
+            handleEmailLogin({ preventDefault: () => {} } as React.FormEvent);
+          }
+        }}
+        className="flex items-center justify-center gap-2.5 py-3.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-sm font-medium text-white hover:bg-[var(--bg-interactive)] transition-colors"
+      >
+        <span className="icon-lucide text-lg text-[var(--text-tertiary)]">
+          mail
+        </span>
+        Send Magic Link
+      </button>
+
+      {/* Sign Up Link */}
+      <div className="flex items-center justify-center gap-1.5 mt-4">
+        <span className="text-sm text-[var(--text-muted)]">
+          Don't have an account?
+        </span>
+        <Link
+          href="/signup"
+          className="text-sm font-medium text-[var(--accent)] hover:underline"
         >
-          {isLoading ? (
-            <svg
-              className="animate-spin h-5 w-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          ) : isMagicLink ? (
-            'Send Magic Link'
-          ) : (
-            'Sign in'
-          )}
-        </button>
+          Sign up
+        </Link>
       </div>
     </form>
   );

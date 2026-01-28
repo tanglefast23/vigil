@@ -1,18 +1,36 @@
-# Health Tracker
+# HealthTrack
 
-A modern health metrics dashboard that integrates with Whoop to track your recovery, workouts, and sleep patterns. Built with Next.js 16, Supabase, and Recharts.
+A modern health metrics dashboard that integrates with Whoop to track your recovery, workouts, and sleep patterns. Built with Next.js 16, Supabase, and a custom dark-themed design system.
 
 ![Dashboard Demo](dashboard-demo.png)
 
 ## Features
 
-- **Recovery Tracking** - Monitor your daily recovery score, HRV, and resting heart rate
+- **Recovery Tracking** - Monitor your daily recovery score, HRV, and resting heart rate with color-coded indicators
 - **Workout Analytics** - View workout history with strain scores, heart rate data, and calories burned
-- **Sleep Insights** - Track sleep duration, efficiency, and sleep stages (REM, deep, light)
+- **Sleep Insights** - Track sleep duration, efficiency, and sleep stages
 - **30-Day Trends** - Interactive charts showing your recovery patterns over time
 - **Demo Mode** - Try the app with realistic sample data before connecting your Whoop
 - **Real-time Sync** - Automatic data synchronization with your Whoop account
 - **Secure Authentication** - Email/password auth with magic link support via Supabase
+
+## Design System
+
+The app features a professional dark theme with a comprehensive design token system:
+
+| Token Category | Examples |
+|----------------|----------|
+| **Backgrounds** | `--bg-page` (#0A0A0B), `--bg-surface` (#111113), `--bg-elevated` (#1A1A1D) |
+| **Text** | `--text-primary` (white), `--text-secondary`, `--text-muted` |
+| **Accents** | `--accent` (#10B981 emerald), `--accent-blue`, `--warning`, `--error` |
+| **Recovery** | `--recovery-high` (green), `--recovery-medium` (yellow), `--recovery-low` (red) |
+
+### Typography
+
+- **Display**: Instrument Serif - elegant headings
+- **Body**: Inter - clean, readable text
+- **Mono**: DM Mono - metrics and data values
+- **Icons**: Lucide icon font
 
 ## Tech Stack
 
@@ -21,7 +39,7 @@ A modern health metrics dashboard that integrates with Whoop to track your recov
 | [Next.js 16](https://nextjs.org/) | React framework with App Router |
 | [React 19](https://react.dev/) | UI library |
 | [Supabase](https://supabase.com/) | Auth, database, and real-time subscriptions |
-| [Tailwind CSS 4](https://tailwindcss.com/) | Utility-first styling |
+| [Tailwind CSS 4](https://tailwindcss.com/) | Utility-first styling with CSS variables |
 | [Recharts](https://recharts.org/) | Data visualization |
 | [TypeScript](https://www.typescriptlang.org/) | Type safety |
 
@@ -46,6 +64,17 @@ A modern health metrics dashboard that integrates with Whoop to track your recov
 - **Row Level Security (RLS)** - Users can only access their own health data
 - **OAuth Integration** - Secure token storage with encryption for Whoop API
 - **Webhook Handlers** - Real-time data updates from Whoop
+
+## Screenshots
+
+### Landing Page
+Dark-themed landing page with hero section, dashboard preview, and feature highlights.
+
+### Dashboard
+Full-width dashboard with sidebar navigation, stat cards showing recovery/HRV/strain/sleep metrics, recovery trend chart, and recent workouts list.
+
+### Authentication
+Split-panel auth pages with form on left and visual marketing content on right. Login uses green accent gradient, signup uses purple.
 
 ## Getting Started
 
@@ -119,6 +148,21 @@ Demo data includes:
 - 15 workout sessions of various types
 - 30 days of sleep tracking data
 
+## UI Components
+
+The app includes a reusable component library in `/src/components/`:
+
+| Component | Description |
+|-----------|-------------|
+| `Button` | Primary (gradient), Secondary (dark), Ghost variants |
+| `Input` | Labeled input field with optional icon |
+| `Logo` | HealthTrack brand mark with icon |
+| `NavItem` | Sidebar navigation item with active states |
+| `StatCard` | Metric display with label, value, trend indicator |
+| `FeatureCard` | Feature showcase with icon, title, description |
+| `WorkoutCard` | Workout row with activity, strain, HR, calories |
+| `Sidebar` | Dashboard navigation with user profile |
+
 ## Database Schema
 
 The app uses these Supabase tables:
@@ -145,11 +189,28 @@ src/
 │   │   ├── seed-test-data/      # Demo data seeding
 │   │   └── webhooks/whoop/      # Whoop webhook handler
 │   ├── dashboard/
-│   │   ├── components/          # Dashboard UI components
+│   │   ├── components/          # Dashboard-specific components
+│   │   │   ├── DashboardSidebar.tsx
+│   │   │   ├── RecoveryChart.tsx
+│   │   │   ├── WorkoutList.tsx
+│   │   │   └── ...
 │   │   ├── actions.ts           # Server actions
 │   │   └── page.tsx             # Main dashboard page
-│   ├── login/                   # Login page
-│   └── signup/                  # Signup page
+│   ├── login/                   # Login page with split layout
+│   ├── signup/                  # Signup page with split layout
+│   ├── globals.css              # Design tokens & base styles
+│   ├── layout.tsx               # Root layout with fonts
+│   └── page.tsx                 # Landing page
+├── components/                  # Shared UI components
+│   ├── Button.tsx
+│   ├── Input.tsx
+│   ├── Logo.tsx
+│   ├── NavItem.tsx
+│   ├── StatCard.tsx
+│   ├── FeatureCard.tsx
+│   ├── WorkoutCard.tsx
+│   ├── Sidebar.tsx
+│   └── index.ts                 # Barrel export
 ├── lib/
 │   ├── supabase/
 │   │   ├── server.ts            # Server client (with cookies)
@@ -193,7 +254,7 @@ To connect real Whoop data:
 2. Register your application
 3. Add your Client ID and Secret to environment variables
 4. Configure the callback URL: `https://your-domain.com/api/auth/whoop/callback`
-5. Users can then connect their Whoop from the dashboard
+5. Users can then connect their Whoop from the dashboard sidebar
 
 ## Contributing
 

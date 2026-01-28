@@ -1,55 +1,123 @@
 /**
  * Login Page
  * Email/password and magic link authentication
+ * Based on Pencil design: Login Page
  */
 
+import Link from 'next/link';
+import { Logo } from '@/components';
 import { AuthForm } from './components/AuthForm';
 
 export const metadata = {
-  title: 'Login | Health Tracker',
+  title: 'Sign In | HealthTrack',
 };
 
-// Prevent static generation - this page needs runtime env vars
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Track your recovery and performance
-        </p>
+    <div className="flex h-screen bg-[var(--bg-page)]">
+      {/* Left Panel - Form */}
+      <div className="flex-1 flex flex-col justify-between bg-[var(--bg-surface)] px-20 py-15">
+        <Logo />
+
+        <div className="flex flex-col gap-8 w-[400px]">
+          <div className="flex flex-col gap-3">
+            <h1 className="font-display-serif text-4xl text-white tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-[15px] text-[var(--text-tertiary)] leading-relaxed">
+              Sign in to your account to continue tracking your health metrics.
+            </p>
+          </div>
+
+          <AuthForm />
+        </div>
+
+        <div />
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          <AuthForm />
+      {/* Right Panel - Visual */}
+      <div className="w-[560px] bg-[var(--bg-page)] p-10 flex items-center justify-center">
+        <div
+          className="
+            w-full h-full
+            rounded-3xl
+            p-10
+            flex flex-col gap-8
+            border border-[var(--border-subtle)]
+          "
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, #0A0A0B 100%)',
+          }}
+        >
+          <div className="flex flex-col gap-4">
+            <h2 className="font-display-serif text-3xl text-white leading-tight tracking-tight max-w-[300px]">
+              Health insights
+              <br />
+              at your fingertips
+            </h2>
+            <p className="text-sm text-[var(--text-tertiary)] leading-relaxed max-w-[350px]">
+              Track recovery, workouts, and sleep to optimize your performance.
+            </p>
+          </div>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">
-                  New to Health Tracker?
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <a
-                href="/signup"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                Create an account
-              </a>
-            </div>
+          <div className="flex-1 flex flex-col gap-4">
+            <VisualStatCard
+              icon="heart-pulse"
+              iconBg="#22C55E20"
+              iconColor="var(--success)"
+              label="Recovery Score"
+              value="87%"
+            />
+            <VisualStatCard
+              icon="moon"
+              iconBg="#6366F120"
+              iconColor="var(--purple)"
+              label="Sleep Quality"
+              value="92%"
+            />
+            <VisualStatCard
+              icon="flame"
+              iconBg="#F59E0B20"
+              iconColor="var(--warning)"
+              label="Daily Strain"
+              value="14.2"
+            />
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualStatCard({
+  icon,
+  iconBg,
+  iconColor,
+  label,
+  value,
+}: {
+  icon: string;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-5">
+      <div
+        className="w-12 h-12 flex items-center justify-center rounded-[var(--radius-lg)]"
+        style={{ backgroundColor: iconBg }}
+      >
+        <span className="icon-lucide text-2xl" style={{ color: iconColor }}>
+          {icon}
+        </span>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-[var(--text-muted)]">{label}</span>
+        <span className="font-mono text-xl font-medium text-white">{value}</span>
       </div>
     </div>
   );
