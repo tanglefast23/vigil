@@ -90,8 +90,8 @@ Split-panel auth pages with form on left and visual marketing content on right. 
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/tanglefast23/health-tracker.git
-cd health-tracker
+git clone https://github.com/tanglefast23/vigil.git
+cd vigil
 npm install
 ```
 
