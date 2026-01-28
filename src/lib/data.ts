@@ -55,12 +55,24 @@ export const getSleepData = cache(async (userId: string, days = 30) => {
 export const getSyncStatus = cache(async (userId: string) => {
   const supabase = getSupabaseClient();
 
-  const { data: syncStatus } = await supabase
+  // Check for whoop sync status first, then test_data
+  let { data: syncStatus } = await supabase
     .from('health_sync_status')
     .select('*')
     .eq('user_id', userId)
     .eq('provider', 'whoop')
     .single();
+
+  // If no whoop status, check for test_data
+  if (!syncStatus) {
+    const { data: testStatus } = await supabase
+      .from('health_sync_status')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('provider', 'test_data')
+      .single();
+    syncStatus = testStatus;
+  }
 
   const { data: connection } = await supabase
     .from('health_oauth_connections')

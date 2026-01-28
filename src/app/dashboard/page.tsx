@@ -12,6 +12,8 @@ import { RecoveryChart } from './components/RecoveryChart';
 import { WorkoutList } from './components/WorkoutList';
 import { SyncButton } from './components/SyncButton';
 import { ConnectionStatus } from './components/ConnectionStatus';
+import { EmptyState } from './components/EmptyState';
+import { TestDataBanner } from './components/TestDataBanner';
 import {
   getRecentWorkouts,
   getRecoveryData,
@@ -43,10 +45,16 @@ export default async function DashboardPage() {
     ]);
 
   const isConnected = !!syncStatus.connection;
+  const hasData = recoveryData.length > 0 || workouts.length > 0;
+  const isTestData = syncStatus.syncStatus?.provider === 'test_data' ||
+    recoveryData.some(r => r.source === 'test_data');
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Test Data Banner */}
+        {isTestData && <TestDataBanner />}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -54,9 +62,11 @@ export default async function DashboardPage() {
               Health Dashboard
             </h1>
             <p className="text-gray-600 mt-1">
-              {isConnected
-                ? 'Synced with Whoop'
-                : 'Connect your Whoop account to see data'}
+              {isTestData
+                ? 'Viewing sample data (Demo Mode)'
+                : isConnected
+                  ? 'Synced with Whoop'
+                  : 'Connect your Whoop account to see data'}
             </p>
           </div>
 
@@ -70,24 +80,12 @@ export default async function DashboardPage() {
                     : undefined
               }
             />
-            {isConnected && <SyncButton userId={userId} />}
+            {isConnected && !isTestData && <SyncButton userId={userId} />}
           </div>
         </div>
 
-        {!isConnected ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <h2 className="text-xl font-semibold mb-4">Connect Whoop</h2>
-            <p className="text-gray-600 mb-6">
-              Link your Whoop account to import recovery scores, workouts, and
-              strain data.
-            </p>
-            <a
-              href={`/api/auth/whoop?user_id=${userId}`}
-              className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Connect Whoop
-            </a>
-          </div>
+        {!isConnected && !hasData ? (
+          <EmptyState />
         ) : (
           <>
             {/* Stats Overview */}
