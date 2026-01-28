@@ -52,64 +52,56 @@ const SPORT_EMOJIS: Record<string, string> = {
 export function WorkoutList({ workouts }: WorkoutListProps) {
   if (workouts.length === 0) {
     return (
-      <p className="text-gray-500 italic">
+      <p className="text-[var(--text-muted)] italic text-sm px-2">
         No workouts found. Sync your Whoop data to see recent activity.
       </p>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {workouts.map((workout) => (
         <div
           key={workout.id}
-          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center justify-between p-3 rounded-[var(--radius-md)] hover:bg-[var(--bg-elevated)] transition-colors"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[var(--accent-tint)] rounded-full flex items-center justify-center text-lg">
               {SPORT_EMOJIS[workout.activity_type] || '💪'}
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900">
+              <h4 className="font-medium text-[var(--text-primary)] text-sm">
                 {SPORT_NAMES[workout.activity_type] || 'Workout'}
               </h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-[var(--text-tertiary)]">
                 {format(parseISO(workout.started_at), 'MMM d, h:mm a')}
               </p>
             </div>
           </div>
 
-          <div className="flex gap-6 text-sm">
+          <div className="flex gap-4 text-xs">
             {workout.strain_score !== null && (
               <div className="text-right">
-                <p className="font-semibold text-gray-900">
+                <p className="font-mono font-medium text-[var(--warning)]">
                   {workout.strain_score.toFixed(1)}
                 </p>
-                <p className="text-gray-500">Strain</p>
+                <p className="text-[var(--text-muted)]">Strain</p>
               </div>
             )}
             {workout.avg_heart_rate !== null && (
               <div className="text-right">
-                <p className="font-semibold text-gray-900">
+                <p className="font-mono font-medium text-[var(--error)]">
                   {workout.avg_heart_rate}
                 </p>
-                <p className="text-gray-500">Avg HR</p>
+                <p className="text-[var(--text-muted)]">HR</p>
               </div>
             )}
             {workout.calories_burned !== null && (
               <div className="text-right">
-                <p className="font-semibold text-gray-900">
+                <p className="font-mono font-medium text-[var(--text-primary)]">
                   {workout.calories_burned}
                 </p>
-                <p className="text-gray-500">kcal</p>
-              </div>
-            )}
-            {workout.distance_meters !== null && workout.distance_meters > 0 && (
-              <div className="text-right">
-                <p className="font-semibold text-gray-900">
-                  {(workout.distance_meters / 1000).toFixed(1)}km
-                </p>
-                <p className="text-gray-500">Distance</p>
+                <p className="text-[var(--text-muted)]">kcal</p>
               </div>
             )}
           </div>
