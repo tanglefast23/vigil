@@ -3,9 +3,7 @@
  * Displays sleep data with trends and detailed breakdowns
  */
 
-import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { DashboardSidebar } from '../components/DashboardSidebar';
 import { getSleepData, getLatestSleep } from '@/lib/data';
 import { format, parseISO } from 'date-fns';
 
@@ -17,13 +15,12 @@ export default async function SleepPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
+  // Auth check handled by layout
+  const userId = user?.id || '';
 
   const [sleepData, latestSleep] = await Promise.all([
-    getSleepData(user.id, 30),
-    getLatestSleep(user.id),
+    getSleepData(userId, 30),
+    getLatestSleep(userId),
   ]);
 
   // Calculate stats
@@ -41,26 +38,19 @@ export default async function SleepPage() {
     : 0;
 
   return (
-    <div className="flex h-screen bg-[var(--bg-page)]">
-      <DashboardSidebar
-        userName={user.user_metadata?.full_name || user.email?.split('@')[0]}
-        userEmail={user.email}
-      />
+    <div className="flex flex-col gap-6 p-4 md:p-8 md:px-10">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display-serif text-2xl md:text-3xl text-white tracking-tight">
+          Sleep
+        </h1>
+        <p className="text-sm text-[var(--text-tertiary)]">
+          Monitor your sleep patterns and quality
+        </p>
+      </div>
 
-      <main className="flex-1 overflow-auto">
-        <div className="flex flex-col gap-7 p-8 px-10">
-          {/* Header */}
-          <div className="flex flex-col gap-2">
-            <h1 className="font-display-serif text-3xl text-white tracking-tight">
-              Sleep
-            </h1>
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Monitor your sleep patterns and quality
-            </p>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4">
+      {/* Stats Row - Responsive */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <StatCard
               label="LAST NIGHT"
               value={latestSleep ? `${(latestSleep.total_sleep_minutes / 60).toFixed(1)}h` : '--'}
@@ -86,20 +76,20 @@ export default async function SleepPage() {
             />
           </div>
 
-          {/* Latest Sleep Breakdown */}
-          {latestSleep && (
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-base font-semibold text-white">
-                  Last Night&apos;s Sleep
-                </h2>
-                <span className="text-sm text-[var(--text-tertiary)]">
-                  {format(parseISO(latestSleep.started_at), 'EEEE, MMM d')}
-                </span>
-              </div>
+      {/* Latest Sleep Breakdown */}
+      {latestSleep && (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+            <h2 className="text-base font-semibold text-white">
+              Last Night&apos;s Sleep
+            </h2>
+            <span className="text-sm text-[var(--text-tertiary)]">
+              {format(parseISO(latestSleep.started_at), 'EEEE, MMM d')}
+            </span>
+          </div>
 
-              {/* Sleep Stages */}
-              <div className="grid grid-cols-4 gap-4 mb-6">
+          {/* Sleep Stages - Responsive */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
                 <SleepStageCard
                   label="Deep Sleep"
                   minutes={latestSleep.deep_minutes}
@@ -126,49 +116,47 @@ export default async function SleepPage() {
                 />
               </div>
 
-              {/* Sleep Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-[var(--text-muted)]">
-                  <span>Sleep Composition</span>
-                  <span>{(latestSleep.total_sleep_minutes / 60).toFixed(1)}h total</span>
-                </div>
-                <SleepBar sleep={latestSleep} />
-              </div>
+          {/* Sleep Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-[var(--text-muted)]">
+              <span>Sleep Composition</span>
+              <span>{(latestSleep.total_sleep_minutes / 60).toFixed(1)}h total</span>
             </div>
-          )}
-
-          {/* Sleep History */}
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--border-subtle)]">
-              <h2 className="text-base font-semibold text-white">
-                Sleep History
-              </h2>
-            </div>
-
-            {sleepData.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
-                  <span className="icon-lucide text-3xl text-[var(--text-muted)]">
-                    moon
-                  </span>
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  No sleep data yet
-                </h3>
-                <p className="text-sm text-[var(--text-tertiary)]">
-                  Sync your Whoop to track your sleep patterns.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-[var(--border-subtle)]">
-                {sleepData.slice().reverse().map((sleep) => (
-                  <SleepRow key={sleep.id} sleep={sleep} />
-                ))}
-              </div>
-            )}
+            <SleepBar sleep={latestSleep} />
           </div>
         </div>
-      </main>
+      )}
+
+      {/* Sleep History */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-[var(--border-subtle)]">
+          <h2 className="text-base font-semibold text-white">
+            Sleep History
+          </h2>
+        </div>
+
+        {sleepData.length === 0 ? (
+          <div className="p-8 md:p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+              <span className="icon-lucide text-3xl text-[var(--text-muted)]">
+                moon
+              </span>
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              No sleep data yet
+            </h3>
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Sync your Whoop to track your sleep patterns.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--border-subtle)] overflow-x-auto">
+            {sleepData.slice().reverse().map((sleep) => (
+              <SleepRow key={sleep.id} sleep={sleep} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -191,16 +179,16 @@ function SleepRow({ sleep }: { sleep: Sleep }) {
   const hours = (sleep.total_sleep_minutes / 60).toFixed(1);
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 hover:bg-[var(--bg-elevated)] transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-[var(--purple-tint)] flex items-center justify-center">
-          <span className="icon-lucide text-xl text-[var(--purple)]">moon</span>
+    <div className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-6 py-4 gap-4 hover:bg-[var(--bg-elevated)] transition-colors">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--purple-tint)] flex items-center justify-center flex-shrink-0">
+          <span className="icon-lucide text-lg md:text-xl text-[var(--purple)]">moon</span>
         </div>
-        <div>
-          <h4 className="font-medium text-white">
+        <div className="min-w-0">
+          <h4 className="font-medium text-white truncate">
             {format(parseISO(sleep.started_at), 'EEEE')}
           </h4>
-          <p className="text-sm text-[var(--text-tertiary)]">
+          <p className="text-xs md:text-sm text-[var(--text-tertiary)] truncate">
             {format(parseISO(sleep.started_at), 'MMM d')} •{' '}
             {format(parseISO(sleep.started_at), 'h:mm a')} -{' '}
             {format(parseISO(sleep.ended_at), 'h:mm a')}
@@ -208,7 +196,7 @@ function SleepRow({ sleep }: { sleep: Sleep }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-4 md:gap-8 ml-13 md:ml-0 flex-wrap">
         <MetricCell label="Duration" value={`${hours}h`} color="var(--purple)" />
         <MetricCell
           label="Score"

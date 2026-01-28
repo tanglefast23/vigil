@@ -4,7 +4,6 @@
  * Based on Pencil design: Dashboard
  */
 
-import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +14,6 @@ import { SyncButton } from './components/SyncButton';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { EmptyState } from './components/EmptyState';
 import { TestDataBanner } from './components/TestDataBanner';
-import { DashboardSidebar } from './components/DashboardSidebar';
 import {
   getRecentWorkouts,
   getRecoveryData,
@@ -30,11 +28,8 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
-
-  const userId = user.id;
+  // Auth check handled by layout, but we need userId
+  const userId = user?.id || '';
 
   const [workouts, recoveryData, syncStatus, weeklyStats, latestRecovery] =
     await Promise.all([
@@ -52,16 +47,7 @@ export default async function DashboardPage() {
     recoveryData.some((r) => r.source === 'test_data');
 
   return (
-    <div className="flex h-screen bg-[var(--bg-page)]">
-      {/* Sidebar */}
-      <DashboardSidebar
-        userName={user.user_metadata?.full_name || user.email?.split('@')[0]}
-        userEmail={user.email}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="flex flex-col gap-7 p-8 px-10">
+    <div className="flex flex-col gap-6 p-4 md:p-8 md:px-10">
           {/* Test Data Banner */}
           {isTestData && <TestDataBanner />}
 
@@ -100,97 +86,95 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {!isConnected && !hasData ? (
-            <EmptyState />
-          ) : (
-            <>
-              {/* Stats Row 1 */}
-              <div className="flex gap-4">
-                <StatCard
-                  label="RECOVERY"
-                  value={`${latestRecovery?.recovery_score ?? '--'}%`}
-                  color={getRecoveryColor(latestRecovery?.recovery_score)}
-                  trend={
-                    latestRecovery
-                      ? { value: '+5% from yesterday', direction: 'up' as const }
-                      : undefined
-                  }
-                  status="live"
-                />
-                <StatCard
-                  label="HRV"
-                  value={`${weeklyStats.avgHrv ?? '--'}ms`}
-                  trend={{ value: 'Avg this week', direction: 'neutral' as const }}
-                />
-                <StatCard
-                  label="WORKOUTS"
-                  value={weeklyStats.workoutCount.toString()}
-                  trend={{ value: 'This week', direction: 'neutral' as const }}
-                />
-                <StatCard
-                  label="STRAIN"
-                  value={weeklyStats.totalStrain.toFixed(1)}
-                  color="var(--warning)"
-                  trend={{ value: 'Total this week', direction: 'neutral' as const }}
-                />
-              </div>
+      {!isConnected && !hasData ? (
+        <EmptyState />
+      ) : (
+        <>
+          {/* Stats Row 1 - Responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <StatCard
+              label="RECOVERY"
+              value={`${latestRecovery?.recovery_score ?? '--'}%`}
+              color={getRecoveryColor(latestRecovery?.recovery_score)}
+              trend={
+                latestRecovery
+                  ? { value: '+5% from yesterday', direction: 'up' as const }
+                  : undefined
+              }
+              status="live"
+            />
+            <StatCard
+              label="HRV"
+              value={`${weeklyStats.avgHrv ?? '--'}ms`}
+              trend={{ value: 'Avg this week', direction: 'neutral' as const }}
+            />
+            <StatCard
+              label="WORKOUTS"
+              value={weeklyStats.workoutCount.toString()}
+              trend={{ value: 'This week', direction: 'neutral' as const }}
+            />
+            <StatCard
+              label="STRAIN"
+              value={weeklyStats.totalStrain.toFixed(1)}
+              color="var(--warning)"
+              trend={{ value: 'Total this week', direction: 'neutral' as const }}
+            />
+          </div>
 
-              {/* Stats Row 2 */}
-              <div className="flex gap-4">
-                <StatCard
-                  label="SLEEP SCORE"
-                  value={`${weeklyStats.avgSleepScore ?? '--'}%`}
-                  color="var(--purple)"
-                  trend={{ value: 'Avg this week', direction: 'neutral' as const }}
-                />
-                <StatCard
-                  label="SLEEP"
-                  value={`${weeklyStats.avgSleepHours ?? '--'}h`}
-                  trend={{ value: 'Avg per night', direction: 'neutral' as const }}
-                />
-                <StatCard
-                  label="CALORIES"
-                  value={weeklyStats.totalCalories.toLocaleString()}
-                  trend={{ value: 'Burned this week', direction: 'neutral' as const }}
-                />
-              </div>
+          {/* Stats Row 2 - Responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <StatCard
+              label="SLEEP SCORE"
+              value={`${weeklyStats.avgSleepScore ?? '--'}%`}
+              color="var(--purple)"
+              trend={{ value: 'Avg this week', direction: 'neutral' as const }}
+            />
+            <StatCard
+              label="SLEEP"
+              value={`${weeklyStats.avgSleepHours ?? '--'}h`}
+              trend={{ value: 'Avg per night', direction: 'neutral' as const }}
+            />
+            <StatCard
+              label="CALORIES"
+              value={weeklyStats.totalCalories.toLocaleString()}
+              trend={{ value: 'Burned this week', direction: 'neutral' as const }}
+            />
+          </div>
 
-              {/* Charts Row */}
-              <div className="flex gap-6 h-80">
-                {/* Recovery Chart */}
-                <div className="flex-1 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6 flex flex-col gap-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-white">
-                      Recovery Trend
-                    </h3>
-                    <span className="text-xs text-[var(--text-muted)]">
-                      Last 30 days
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <RecoveryChart data={recoveryData} />
-                  </div>
-                </div>
-
-                {/* Recent Workouts */}
-                <div className="w-[400px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
-                  <div className="flex items-center justify-between px-5 pt-5">
-                    <h3 className="text-base font-semibold text-white">
-                      Recent Workouts
-                    </h3>
-                    <button className="text-xs text-[var(--accent)] hover:underline">
-                      View All
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-auto p-3">
-                    <WorkoutList workouts={workouts} />
-                  </div>
-                </div>
+          {/* Charts Row - Stacks on mobile */}
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+            {/* Recovery Chart */}
+            <div className="flex-1 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-6 flex flex-col gap-4 md:gap-5 min-h-[280px] lg:h-80">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-white">
+                  Recovery Trend
+                </h3>
+                <span className="text-xs text-[var(--text-muted)]">
+                  Last 30 days
+                </span>
               </div>
-            </>
-          )}
-        </div>
-      </main>
+              <div className="flex-1">
+                <RecoveryChart data={recoveryData} />
+              </div>
+            </div>
+
+            {/* Recent Workouts */}
+            <div className="lg:w-[400px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden flex flex-col min-h-[280px] lg:h-80">
+              <div className="flex items-center justify-between px-4 md:px-5 pt-4 md:pt-5">
+                <h3 className="text-base font-semibold text-white">
+                  Recent Workouts
+                </h3>
+                <button className="text-xs text-[var(--accent)] hover:underline">
+                  View All
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-3">
+                <WorkoutList workouts={workouts} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -220,7 +204,7 @@ function StatCard({ label, value, color, trend, status }: StatCardProps) {
   };
 
   return (
-    <div className="flex-1 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-3">
+    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-5 flex flex-col gap-2 md:gap-3">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold tracking-wide text-[var(--text-muted)] uppercase">
           {label}
@@ -236,7 +220,7 @@ function StatCard({ label, value, color, trend, status }: StatCardProps) {
       </div>
 
       <span
-        className="font-mono text-4xl font-medium tracking-tight"
+        className="font-mono text-2xl md:text-4xl font-medium tracking-tight"
         style={{ color: color || 'var(--text-primary)' }}
       >
         {value}

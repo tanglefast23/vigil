@@ -3,9 +3,7 @@
  * Displays full workout history with filtering and details
  */
 
-import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { DashboardSidebar } from '../components/DashboardSidebar';
 import { getRecentWorkouts } from '@/lib/data';
 import { format, parseISO } from 'date-fns';
 
@@ -47,11 +45,8 @@ export default async function WorkoutsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
-
-  const workouts = await getRecentWorkouts(user.id, 50);
+  // Auth check handled by layout
+  const workouts = await getRecentWorkouts(user?.id || '', 50);
 
   // Calculate stats
   const totalWorkouts = workouts.length;
@@ -62,32 +57,25 @@ export default async function WorkoutsPage() {
     : 0;
 
   return (
-    <div className="flex h-screen bg-[var(--bg-page)]">
-      <DashboardSidebar
-        userName={user.user_metadata?.full_name || user.email?.split('@')[0]}
-        userEmail={user.email}
-      />
+    <div className="flex flex-col gap-6 p-4 md:p-8 md:px-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-display-serif text-2xl md:text-3xl text-white tracking-tight">
+            Workouts
+          </h1>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            Track your activity and training history
+          </p>
+        </div>
+        <button className="gradient-accent flex items-center justify-center gap-2 px-5 py-3 rounded-[var(--radius-md)] text-sm font-medium text-white hover:opacity-90 transition-opacity">
+          <span className="icon-lucide">plus</span>
+          Log Workout
+        </button>
+      </div>
 
-      <main className="flex-1 overflow-auto">
-        <div className="flex flex-col gap-7 p-8 px-10">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-2">
-              <h1 className="font-display-serif text-3xl text-white tracking-tight">
-                Workouts
-              </h1>
-              <p className="text-sm text-[var(--text-tertiary)]">
-                Track your activity and training history
-              </p>
-            </div>
-            <button className="gradient-accent flex items-center gap-2 px-5 py-3 rounded-[var(--radius-md)] text-sm font-medium text-white hover:opacity-90 transition-opacity">
-              <span className="icon-lucide">plus</span>
-              Log Workout
-            </button>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4">
+      {/* Stats Row - Responsive */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <StatCard label="TOTAL WORKOUTS" value={totalWorkouts.toString()} />
             <StatCard
               label="TOTAL STRAIN"
@@ -106,38 +94,36 @@ export default async function WorkoutsPage() {
             />
           </div>
 
-          {/* Workouts List */}
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--border-subtle)]">
-              <h2 className="text-base font-semibold text-white">
-                Recent Activity
-              </h2>
-            </div>
-
-            {workouts.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
-                  <span className="icon-lucide text-3xl text-[var(--text-muted)]">
-                    dumbbell
-                  </span>
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  No workouts yet
-                </h3>
-                <p className="text-sm text-[var(--text-tertiary)]">
-                  Sync your Whoop or log a workout to get started.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-[var(--border-subtle)]">
-                {workouts.map((workout) => (
-                  <WorkoutRow key={workout.id} workout={workout} />
-                ))}
-              </div>
-            )}
-          </div>
+      {/* Workouts List */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-[var(--border-subtle)]">
+          <h2 className="text-base font-semibold text-white">
+            Recent Activity
+          </h2>
         </div>
-      </main>
+
+        {workouts.length === 0 ? (
+          <div className="p-8 md:p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+              <span className="icon-lucide text-3xl text-[var(--text-muted)]">
+                dumbbell
+              </span>
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              No workouts yet
+            </h3>
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Sync your Whoop or log a workout to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--border-subtle)] overflow-x-auto">
+            {workouts.map((workout) => (
+              <WorkoutRow key={workout.id} workout={workout} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -174,22 +160,22 @@ function WorkoutRow({ workout }: { workout: Workout }) {
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 hover:bg-[var(--bg-elevated)] transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-[var(--accent-tint)] flex items-center justify-center">
-          <span className="icon-lucide text-xl text-[var(--accent)]">
+    <div className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-6 py-4 gap-4 hover:bg-[var(--bg-elevated)] transition-colors">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--accent-tint)] flex items-center justify-center flex-shrink-0">
+          <span className="icon-lucide text-lg md:text-xl text-[var(--accent)]">
             {activityIcon}
           </span>
         </div>
-        <div>
-          <h4 className="font-medium text-white">{activityName}</h4>
-          <p className="text-sm text-[var(--text-tertiary)]">
+        <div className="min-w-0">
+          <h4 className="font-medium text-white truncate">{activityName}</h4>
+          <p className="text-xs md:text-sm text-[var(--text-tertiary)] truncate">
             {format(parseISO(workout.started_at), 'EEEE, MMM d • h:mm a')}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-4 md:gap-8 ml-13 md:ml-0 flex-wrap">
         <MetricCell label="Duration" value={durationStr} />
         <MetricCell
           label="Strain"

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  /* Layout */
+  --sidebar-width: 260px;
+
   /* Accent Colors */
   --accent: #10B981;
   --accent-light: #34D399;
@@ -114,4 +117,45 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Mobile sidebar body scroll lock */
+body.sidebar-open {
+  overflow: hidden;
+}
+
+/* Safe area padding for mobile devices with notches */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Content padding for mobile tab bar */
+.pb-tab-bar {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0));
+}
+
+/* Responsive touch target size */
+@media (pointer: coarse) {
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Animation for skeleton loading */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

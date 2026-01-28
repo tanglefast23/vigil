@@ -5,8 +5,8 @@
 
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { DashboardSidebar } from '../dashboard/components/DashboardSidebar';
 import { getSyncStatus } from '@/lib/data';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,136 +21,131 @@ export default async function SettingsPage() {
   }
 
   const { connection } = await getSyncStatus(user.id);
+  const userName = user.user_metadata?.full_name || user.email?.split('@')[0];
+  const userEmail = user.email;
 
   return (
-    <div className="flex h-screen bg-[var(--bg-page)]">
-      <DashboardSidebar
-        userName={user.user_metadata?.full_name || user.email?.split('@')[0]}
-        userEmail={user.email}
-      />
+    <DashboardLayout userName={userName} userEmail={userEmail}>
+      <div className="flex flex-col gap-6 p-4 md:p-8 md:px-10 max-w-3xl">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <h1 className="font-display-serif text-2xl md:text-3xl text-white tracking-tight">
+            Settings
+          </h1>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            Manage your account and preferences
+          </p>
+        </div>
 
-      <main className="flex-1 overflow-auto">
-        <div className="flex flex-col gap-7 p-8 px-10 max-w-3xl">
-          {/* Header */}
-          <div className="flex flex-col gap-2">
-            <h1 className="font-display-serif text-3xl text-white tracking-tight">
-              Settings
-            </h1>
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Manage your account and preferences
-            </p>
+        {/* Profile Section */}
+        <SettingsSection title="Profile">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-blue)] flex items-center justify-center flex-shrink-0">
+              <span className="text-xl md:text-2xl font-semibold text-white">
+                {(user.email?.[0] || 'U').toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-medium text-white truncate">
+                {user.user_metadata?.full_name || user.email?.split('@')[0]}
+              </h3>
+              <p className="text-sm text-[var(--text-tertiary)] truncate">
+                {user.email}
+              </p>
+            </div>
           </div>
 
-          {/* Profile Section */}
-          <SettingsSection title="Profile">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-blue)] flex items-center justify-center">
-                <span className="text-2xl font-semibold text-white">
-                  {(user.email?.[0] || 'U').toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-medium text-white">
-                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                </h3>
-                <p className="text-sm text-[var(--text-tertiary)]">
-                  {user.email}
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SettingsField
+              label="Email"
+              value={user.email || ''}
+              disabled
+            />
+            <SettingsField
+              label="Member Since"
+              value={new Date(user.created_at).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric',
+              })}
+              disabled
+            />
+          </div>
+        </SettingsSection>
 
-            <div className="grid grid-cols-2 gap-4">
-              <SettingsField
-                label="Email"
-                value={user.email || ''}
-                disabled
-              />
-              <SettingsField
-                label="Member Since"
-                value={new Date(user.created_at).toLocaleDateString('en-US', {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-                disabled
-              />
-            </div>
-          </SettingsSection>
+        {/* Connected Devices */}
+        <SettingsSection title="Connected Devices">
+          <div className="space-y-4">
+            <DeviceConnection
+              name="Whoop"
+              icon="activity"
+              connected={!!connection}
+              lastSync={connection?.updated_at}
+            />
+            <DeviceConnection
+              name="Apple Health"
+              icon="apple"
+              connected={false}
+              comingSoon
+            />
+            <DeviceConnection
+              name="Garmin"
+              icon="watch"
+              connected={false}
+              comingSoon
+            />
+          </div>
+        </SettingsSection>
 
-          {/* Connected Devices */}
-          <SettingsSection title="Connected Devices">
-            <div className="space-y-4">
-              <DeviceConnection
-                name="Whoop"
-                icon="activity"
-                connected={!!connection}
-                lastSync={connection?.updated_at}
-              />
-              <DeviceConnection
-                name="Apple Health"
-                icon="apple"
-                connected={false}
-                comingSoon
-              />
-              <DeviceConnection
-                name="Garmin"
-                icon="watch"
-                connected={false}
-                comingSoon
-              />
-            </div>
-          </SettingsSection>
+        {/* Notifications */}
+        <SettingsSection title="Notifications">
+          <div className="space-y-4">
+            <ToggleSetting
+              label="Daily Recovery Summary"
+              description="Receive a notification with your recovery score each morning"
+              defaultChecked={true}
+            />
+            <ToggleSetting
+              label="Workout Reminders"
+              description="Get reminded to log workouts if you haven't trained"
+              defaultChecked={false}
+            />
+            <ToggleSetting
+              label="Weekly Progress Report"
+              description="Summary of your weekly health metrics"
+              defaultChecked={true}
+            />
+          </div>
+        </SettingsSection>
 
-          {/* Notifications */}
-          <SettingsSection title="Notifications">
-            <div className="space-y-4">
-              <ToggleSetting
-                label="Daily Recovery Summary"
-                description="Receive a notification with your recovery score each morning"
-                defaultChecked={true}
-              />
-              <ToggleSetting
-                label="Workout Reminders"
-                description="Get reminded to log workouts if you haven't trained"
-                defaultChecked={false}
-              />
-              <ToggleSetting
-                label="Weekly Progress Report"
-                description="Summary of your weekly health metrics"
-                defaultChecked={true}
-              />
+        {/* Privacy */}
+        <SettingsSection title="Privacy & Data">
+          <div className="space-y-4">
+            <ToggleSetting
+              label="Share Anonymous Data"
+              description="Help improve HealthTrack by sharing anonymous usage data"
+              defaultChecked={false}
+            />
+            <div className="pt-4 border-t border-[var(--border-subtle)]">
+              <button className="text-sm text-[var(--text-secondary)] hover:text-white transition-colors">
+                Download my data
+              </button>
             </div>
-          </SettingsSection>
+            <div>
+              <button className="text-sm text-[var(--error)] hover:text-[var(--error)] hover:opacity-80 transition-opacity">
+                Delete my account
+              </button>
+            </div>
+          </div>
+        </SettingsSection>
 
-          {/* Privacy */}
-          <SettingsSection title="Privacy & Data">
-            <div className="space-y-4">
-              <ToggleSetting
-                label="Share Anonymous Data"
-                description="Help improve HealthTrack by sharing anonymous usage data"
-                defaultChecked={false}
-              />
-              <div className="pt-4 border-t border-[var(--border-subtle)]">
-                <button className="text-sm text-[var(--text-secondary)] hover:text-white transition-colors">
-                  Download my data
-                </button>
-              </div>
-              <div>
-                <button className="text-sm text-[var(--error)] hover:text-[var(--error)] hover:opacity-80 transition-opacity">
-                  Delete my account
-                </button>
-              </div>
-            </div>
-          </SettingsSection>
-
-          {/* Danger Zone */}
-          <SettingsSection title="Account Actions">
-            <div className="flex gap-4">
-              <SignOutButton />
-            </div>
-          </SettingsSection>
-        </div>
-      </main>
-    </div>
+        {/* Danger Zone */}
+        <SettingsSection title="Account Actions">
+          <div className="flex gap-4">
+            <SignOutButton />
+          </div>
+        </SettingsSection>
+      </div>
+    </DashboardLayout>
   );
 }
 
@@ -162,8 +157,8 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6">
-      <h2 className="text-base font-semibold text-white mb-5">{title}</h2>
+    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-6">
+      <h2 className="text-base font-semibold text-white mb-4 md:mb-5">{title}</h2>
       {children}
     </div>
   );

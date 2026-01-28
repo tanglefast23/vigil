@@ -3,9 +3,7 @@
  * Displays recovery scores, HRV trends, and detailed metrics
  */
 
-import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { DashboardSidebar } from '../components/DashboardSidebar';
 import { RecoveryChart } from '../components/RecoveryChart';
 import { getRecoveryData, getLatestRecovery } from '@/lib/data';
 import { format, parseISO } from 'date-fns';
@@ -18,13 +16,12 @@ export default async function RecoveryPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
+  // Auth check handled by layout
+  const userId = user?.id || '';
 
   const [recoveryData, latestRecovery] = await Promise.all([
-    getRecoveryData(user.id, 30),
-    getLatestRecovery(user.id),
+    getRecoveryData(userId, 30),
+    getLatestRecovery(userId),
   ]);
 
   // Calculate stats
@@ -46,37 +43,30 @@ export default async function RecoveryPage() {
   const lowRecoveryDays = recoveryData.filter(r => r.recovery_score < 34).length;
 
   return (
-    <div className="flex h-screen bg-[var(--bg-page)]">
-      <DashboardSidebar
-        userName={user.user_metadata?.full_name || user.email?.split('@')[0]}
-        userEmail={user.email}
-      />
+    <div className="flex flex-col gap-6 p-4 md:p-8 md:px-10">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display-serif text-2xl md:text-3xl text-white tracking-tight">
+          Recovery
+        </h1>
+        <p className="text-sm text-[var(--text-tertiary)]">
+          Track your body&apos;s readiness and recovery metrics
+        </p>
+      </div>
 
-      <main className="flex-1 overflow-auto">
-        <div className="flex flex-col gap-7 p-8 px-10">
-          {/* Header */}
-          <div className="flex flex-col gap-2">
-            <h1 className="font-display-serif text-3xl text-white tracking-tight">
-              Recovery
-            </h1>
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Track your body&apos;s readiness and recovery metrics
-            </p>
+      {/* Today's Recovery Card */}
+      {latestRecovery && (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+            <h2 className="text-base font-semibold text-white">
+              Today&apos;s Recovery
+            </h2>
+            <span className="text-sm text-[var(--text-tertiary)]">
+              {format(parseISO(latestRecovery.recorded_at), 'EEEE, MMM d')}
+            </span>
           </div>
 
-          {/* Today's Recovery Card */}
-          {latestRecovery && (
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-base font-semibold text-white">
-                  Today&apos;s Recovery
-                </h2>
-                <span className="text-sm text-[var(--text-tertiary)]">
-                  {format(parseISO(latestRecovery.recorded_at), 'EEEE, MMM d')}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-12">
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
                 {/* Recovery Score Circle */}
                 <div className="flex flex-col items-center">
                   <div
@@ -104,9 +94,9 @@ export default async function RecoveryPage() {
                   </span>
                 </div>
 
-                {/* Metrics */}
-                <div className="flex-1 grid grid-cols-3 gap-6">
-                  <MetricCard
+            {/* Metrics */}
+            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              <MetricCard
                     icon="heart-pulse"
                     label="HRV"
                     value={latestRecovery.hrv_rmssd ? `${latestRecovery.hrv_rmssd}ms` : '--'}
@@ -120,20 +110,20 @@ export default async function RecoveryPage() {
                     color="var(--error)"
                     description="Resting Heart Rate"
                   />
-                  <MetricCard
-                    icon="droplets"
-                    label="SpO2"
-                    value={latestRecovery.spo2 ? `${latestRecovery.spo2}%` : '--'}
-                    color="var(--accent-blue)"
-                    description="Blood Oxygen"
-                  />
-                </div>
-              </div>
+              <MetricCard
+                icon="droplets"
+                label="SpO2"
+                value={latestRecovery.spo2 ? `${latestRecovery.spo2}%` : '--'}
+                color="var(--accent-blue)"
+                description="Blood Oxygen"
+              />
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4">
+      {/* Stats Row - Responsive */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <StatCard
               label="AVG RECOVERY"
               value={avgRecovery ? `${avgRecovery}%` : '--'}
@@ -164,53 +154,51 @@ export default async function RecoveryPage() {
             </div>
           </div>
 
-          {/* Recovery Trend Chart */}
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-white">
-                Recovery Trend
-              </h2>
-              <span className="text-sm text-[var(--text-tertiary)]">
-                Last 30 days
+      {/* Recovery Trend Chart */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <h2 className="text-base font-semibold text-white">
+            Recovery Trend
+          </h2>
+          <span className="text-sm text-[var(--text-tertiary)]">
+            Last 30 days
+          </span>
+        </div>
+        <div className="h-56 md:h-72">
+          <RecoveryChart data={recoveryData} />
+        </div>
+      </div>
+
+      {/* Recovery History */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-[var(--border-subtle)]">
+          <h2 className="text-base font-semibold text-white">
+            Recovery History
+          </h2>
+        </div>
+
+        {recoveryData.length === 0 ? (
+          <div className="p-8 md:p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+              <span className="icon-lucide text-3xl text-[var(--text-muted)]">
+                heart-pulse
               </span>
             </div>
-            <div className="h-72">
-              <RecoveryChart data={recoveryData} />
-            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              No recovery data yet
+            </h3>
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Sync your Whoop to track your recovery.
+            </p>
           </div>
-
-          {/* Recovery History */}
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--border-subtle)]">
-              <h2 className="text-base font-semibold text-white">
-                Recovery History
-              </h2>
-            </div>
-
-            {recoveryData.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
-                  <span className="icon-lucide text-3xl text-[var(--text-muted)]">
-                    heart-pulse
-                  </span>
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  No recovery data yet
-                </h3>
-                <p className="text-sm text-[var(--text-tertiary)]">
-                  Sync your Whoop to track your recovery.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-[var(--border-subtle)]">
-                {recoveryData.slice().reverse().map((recovery) => (
-                  <RecoveryRow key={recovery.id} recovery={recovery} />
-                ))}
-              </div>
-            )}
+        ) : (
+          <div className="divide-y divide-[var(--border-subtle)] overflow-x-auto">
+            {recoveryData.slice().reverse().map((recovery) => (
+              <RecoveryRow key={recovery.id} recovery={recovery} />
+            ))}
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 }
@@ -229,30 +217,30 @@ function RecoveryRow({ recovery }: { recovery: Recovery }) {
   const color = getRecoveryColor(recovery.recovery_score);
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 hover:bg-[var(--bg-elevated)] transition-colors">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-6 py-4 gap-4 hover:bg-[var(--bg-elevated)] transition-colors">
+      <div className="flex items-center gap-3 md:gap-4">
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center"
+          className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${color}20` }}
         >
           <span
-            className="font-mono text-lg font-bold"
+            className="font-mono text-base md:text-lg font-bold"
             style={{ color }}
           >
             {recovery.recovery_score}
           </span>
         </div>
-        <div>
-          <h4 className="font-medium text-white">
+        <div className="min-w-0">
+          <h4 className="font-medium text-white truncate">
             {format(parseISO(recovery.recorded_at), 'EEEE')}
           </h4>
-          <p className="text-sm text-[var(--text-tertiary)]">
+          <p className="text-xs md:text-sm text-[var(--text-tertiary)] truncate">
             {format(parseISO(recovery.recorded_at), 'MMM d, yyyy')}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-4 md:gap-8 ml-13 md:ml-0 flex-wrap">
         <MetricCell
           label="Recovery"
           value={`${recovery.recovery_score}%`}
