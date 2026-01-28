@@ -1,7 +1,7 @@
 /**
  * Cron Sync Worker
  * Periodically syncs Whoop data for all connected users
- * Configure in Vercel: crons = [{ path = "/api/cron/sync-worker", schedule = "0 */4 * * *" }]
+ * Runs every 4 hours via Vercel cron (configured in vercel.json)
  */
 
 import { NextResponse } from 'next/server';
