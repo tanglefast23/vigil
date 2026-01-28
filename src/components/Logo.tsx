@@ -39,7 +39,7 @@ export function Logo({ href = '/', showText = true, size = 'md' }: LogoProps) {
         <span
           className={`font-mono font-semibold ${s.text} text-white tracking-wide`}
         >
-          Vigil
+          Rdy Vigil
         </span>
       )}
     </div>

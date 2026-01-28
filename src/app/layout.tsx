@@ -30,7 +30,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata = {
-  title: 'Vigil',
+  title: 'Rdy Vigil',
   description: 'Careful monitoring of your recovery, sleep, and workouts',
 };
 

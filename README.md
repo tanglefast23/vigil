@@ -1,4 +1,4 @@
-# Vigil
+# Rdy Vigil
 
 Careful monitoring of your recovery, sleep, and workouts. A modern health metrics dashboard that integrates with Whoop. Built with Next.js 16, Supabase, and a custom dark-themed design system.
 
@@ -90,8 +90,8 @@ Split-panel auth pages with form on left and visual marketing content on right. 
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/tanglefast23/vigil.git
-cd vigil
+git clone https://github.com/tanglefast23/rdy-vigil.git
+cd rdy-vigil
 npm install
 ```
 
@@ -159,7 +159,7 @@ The app includes a reusable component library in `/src/components/`:
 |-----------|-------------|
 | `Button` | Primary (gradient), Secondary (dark), Ghost variants |
 | `Input` | Labeled input field with optional icon |
-| `Logo` | Vigil brand mark with shield icon |
+| `Logo` | Rdy Vigil brand mark with shield icon |
 | `NavItem` | Sidebar navigation item with active states |
 | `StatCard` | Metric display with label, value, trend indicator |
 | `FeatureCard` | Feature showcase with icon, title, description |
@@ -244,7 +244,7 @@ src/
 3. Add environment variables in Vercel dashboard
 4. Deploy!
 
-**Live Demo**: [vigil.vercel.app](https://vigil.vercel.app)
+**Live Demo**: [rdy-vigil.vercel.app](https://rdy-vigil.vercel.app)
 
 ### Environment Variables for Production
 
