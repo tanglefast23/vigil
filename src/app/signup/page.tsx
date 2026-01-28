@@ -9,6 +9,9 @@ export const metadata = {
   title: 'Sign Up | Health Tracker',
 };
 
+// Prevent static generation - this page needs runtime env vars
+export const dynamic = 'force-dynamic';
+
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

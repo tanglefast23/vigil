@@ -5,6 +5,9 @@
 
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+
+// Prevent static generation - requires auth
+export const dynamic = 'force-dynamic';
 import { RecoveryChart } from './components/RecoveryChart';
 import { WorkoutList } from './components/WorkoutList';
 import { SyncButton } from './components/SyncButton';
