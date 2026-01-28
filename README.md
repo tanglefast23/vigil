@@ -1,6 +1,6 @@
-# HealthTrack
+# Vigil
 
-A modern health metrics dashboard that integrates with Whoop to track your recovery, workouts, and sleep patterns. Built with Next.js 16, Supabase, and a custom dark-themed design system.
+Careful monitoring of your recovery, sleep, and workouts. A modern health metrics dashboard that integrates with Whoop. Built with Next.js 16, Supabase, and a custom dark-themed design system.
 
 ![Dashboard Demo](dashboard-demo.png)
 
@@ -10,6 +10,7 @@ A modern health metrics dashboard that integrates with Whoop to track your recov
 - **Workout Analytics** - View workout history with strain scores, heart rate data, and calories burned
 - **Sleep Insights** - Track sleep duration, efficiency, and sleep stages
 - **30-Day Trends** - Interactive charts showing your recovery patterns over time
+- **Responsive Layout** - Auto-detecting mobile/desktop layout with manual toggle
 - **Demo Mode** - Try the app with realistic sample data before connecting your Whoop
 - **Real-time Sync** - Automatic data synchronization with your Whoop account
 - **Secure Authentication** - Email/password auth with magic link support via Supabase
@@ -40,6 +41,7 @@ The app features a professional dark theme with a comprehensive design token sys
 | [React 19](https://react.dev/) | UI library |
 | [Supabase](https://supabase.com/) | Auth, database, and real-time subscriptions |
 | [Tailwind CSS 4](https://tailwindcss.com/) | Utility-first styling with CSS variables |
+| [Zustand](https://zustand-demo.pmnd.rs/) | Client-side state management |
 | [Recharts](https://recharts.org/) | Data visualization |
 | [TypeScript](https://www.typescriptlang.org/) | Type safety |
 
@@ -64,6 +66,7 @@ The app features a professional dark theme with a comprehensive design token sys
 - **Row Level Security (RLS)** - Users can only access their own health data
 - **OAuth Integration** - Secure token storage with encryption for Whoop API
 - **Webhook Handlers** - Real-time data updates from Whoop
+- **Responsive Layout** - Auto-detecting mobile/desktop with Zustand persistence
 
 ## Screenshots
 
@@ -71,7 +74,7 @@ The app features a professional dark theme with a comprehensive design token sys
 Dark-themed landing page with hero section, dashboard preview, and feature highlights.
 
 ### Dashboard
-Full-width dashboard with sidebar navigation, stat cards showing recovery/HRV/strain/sleep metrics, recovery trend chart, and recent workouts list.
+Full-width dashboard with sidebar navigation (desktop) or bottom tab bar (mobile), stat cards showing recovery/HRV/strain/sleep metrics, recovery trend chart, and recent workouts list.
 
 ### Authentication
 Split-panel auth pages with form on left and visual marketing content on right. Login uses green accent gradient, signup uses purple.
@@ -156,12 +159,21 @@ The app includes a reusable component library in `/src/components/`:
 |-----------|-------------|
 | `Button` | Primary (gradient), Secondary (dark), Ghost variants |
 | `Input` | Labeled input field with optional icon |
-| `Logo` | HealthTrack brand mark with icon |
+| `Logo` | Vigil brand mark with shield icon |
 | `NavItem` | Sidebar navigation item with active states |
 | `StatCard` | Metric display with label, value, trend indicator |
 | `FeatureCard` | Feature showcase with icon, title, description |
 | `WorkoutCard` | Workout row with activity, strain, HR, calories |
-| `Sidebar` | Dashboard navigation with user profile |
+
+### Layout Components
+
+| Component | Description |
+|-----------|-------------|
+| `DashboardLayout` | Coordinates responsive sidebar, header, content |
+| `ResponsiveSidebar` | Fixed sidebar (desktop) / slide-in drawer (mobile) |
+| `DashboardHeader` | Sticky header with hamburger menu and layout toggle |
+| `MobileTabBar` | Bottom navigation for mobile view |
+| `LayoutModeToggle` | Auto/Mobile/Desktop view switcher |
 
 ## Database Schema
 
@@ -190,38 +202,35 @@ src/
 │   │   └── webhooks/whoop/      # Whoop webhook handler
 │   ├── dashboard/
 │   │   ├── components/          # Dashboard-specific components
-│   │   │   ├── DashboardSidebar.tsx
-│   │   │   ├── RecoveryChart.tsx
-│   │   │   ├── WorkoutList.tsx
-│   │   │   └── ...
-│   │   ├── actions.ts           # Server actions
-│   │   └── page.tsx             # Main dashboard page
-│   ├── login/                   # Login page with split layout
-│   ├── signup/                  # Signup page with split layout
+│   │   ├── layout.tsx           # Shared dashboard layout
+│   │   ├── page.tsx             # Main dashboard
+│   │   ├── workouts/            # Workouts page
+│   │   ├── sleep/               # Sleep page
+│   │   └── recovery/            # Recovery page
+│   ├── settings/                # Settings page
+│   ├── login/                   # Login page
+│   ├── signup/                  # Signup page
 │   ├── globals.css              # Design tokens & base styles
-│   ├── layout.tsx               # Root layout with fonts
-│   └── page.tsx                 # Landing page
-├── components/                  # Shared UI components
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Logo.tsx
-│   ├── NavItem.tsx
-│   ├── StatCard.tsx
-│   ├── FeatureCard.tsx
-│   ├── WorkoutCard.tsx
-│   ├── Sidebar.tsx
-│   └── index.ts                 # Barrel export
+│   └── layout.tsx               # Root layout with fonts
+├── components/
+│   ├── layout/                  # Responsive layout components
+│   │   ├── DashboardLayout.tsx
+│   │   ├── ResponsiveSidebar.tsx
+│   │   ├── DashboardHeader.tsx
+│   │   ├── MobileTabBar.tsx
+│   │   └── LayoutModeToggle.tsx
+│   └── ...                      # Shared UI components
+├── hooks/
+│   ├── useLayoutMode.ts         # Responsive layout hook
+│   ├── useIsMounted.ts          # SSR-safe mounting
+│   └── useRealtimeSync.ts       # Real-time sync status
+├── stores/
+│   └── layoutStore.ts           # Zustand store for layout
 ├── lib/
-│   ├── supabase/
-│   │   ├── server.ts            # Server client (with cookies)
-│   │   ├── client.ts            # Admin client (service role)
-│   │   └── browser.ts           # Browser client
-│   ├── whoop/
-│   │   └── client.ts            # Whoop API client
+│   ├── supabase/                # Supabase clients
+│   ├── whoop/                   # Whoop API client
 │   ├── crypto.ts                # Token encryption
 │   └── data.ts                  # Data fetching utilities
-├── hooks/
-│   └── useRealtimeSync.ts       # Real-time sync status hook
 └── types/
     └── health.ts                # TypeScript types
 ```
@@ -234,6 +243,8 @@ src/
 2. Import the project in [Vercel](https://vercel.com)
 3. Add environment variables in Vercel dashboard
 4. Deploy!
+
+**Live Demo**: [vigil.vercel.app](https://vigil.vercel.app)
 
 ### Environment Variables for Production
 

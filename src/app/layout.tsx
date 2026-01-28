@@ -30,8 +30,8 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata = {
-  title: 'HealthTrack',
-  description: 'Track your Whoop recovery, sleep, and workouts',
+  title: 'Vigil',
+  description: 'Careful monitoring of your recovery, sleep, and workouts',
 };
 
 export default function RootLayout({

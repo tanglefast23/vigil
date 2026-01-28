@@ -1,6 +1,6 @@
 /**
  * Logo Component
- * HealthTrack brand logo with icon and text
+ * Vigil brand logo with icon and text
  * Based on Pencil design: Logo
  */
 
@@ -32,14 +32,14 @@ export function Logo({ href = '/', showText = true, size = 'md' }: LogoProps) {
         `}
       >
         <span className={`icon-lucide ${s.iconFont} text-white`}>
-          heart-pulse
+          shield-check
         </span>
       </div>
       {showText && (
         <span
           className={`font-mono font-semibold ${s.text} text-white tracking-wide`}
         >
-          HealthTrack
+          Vigil
         </span>
       )}
     </div>
