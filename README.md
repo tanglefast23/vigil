@@ -159,7 +159,7 @@ The app includes a reusable component library in `/src/components/`:
 |-----------|-------------|
 | `Button` | Primary (gradient), Secondary (dark), Ghost variants |
 | `Input` | Labeled input field with optional icon |
-| `Logo` | Rdy Vigil brand mark with shield icon |
+| `Logo` | Rdy Vigil brand mark with eye icon and split-color text |
 | `NavItem` | Sidebar navigation item with active states |
 | `StatCard` | Metric display with label, value, trend indicator |
 | `FeatureCard` | Feature showcase with icon, title, description |

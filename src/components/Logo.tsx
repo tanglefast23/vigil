@@ -1,7 +1,7 @@
 /**
  * Logo Component
- * Vigil brand logo with icon and text
- * Based on Pencil design: Logo
+ * Rdy Vigil brand logo with eye icon and split-color text
+ * Based on Pencil design: Logo/Primary
  */
 
 import Link from 'next/link';
@@ -13,16 +13,16 @@ interface LogoProps {
 }
 
 const sizes = {
-  sm: { icon: 'w-6 h-6', iconFont: 'text-sm', text: 'text-sm' },
-  md: { icon: 'w-8 h-8', iconFont: 'text-lg', text: 'text-lg' },
-  lg: { icon: 'w-10 h-10', iconFont: 'text-xl', text: 'text-xl' },
+  sm: { icon: 'w-6 h-6', iconFont: 'text-sm', text: 'text-sm', gap: 'gap-2' },
+  md: { icon: 'w-8 h-8', iconFont: 'text-lg', text: 'text-lg', gap: 'gap-2.5' },
+  lg: { icon: 'w-10 h-10', iconFont: 'text-xl', text: 'text-xl', gap: 'gap-3' },
 };
 
 export function Logo({ href = '/', showText = true, size = 'md' }: LogoProps) {
   const s = sizes[size];
 
   const content = (
-    <div className="flex items-center gap-2.5">
+    <div className={`flex items-center ${s.gap}`}>
       <div
         className={`
           ${s.icon}
@@ -32,14 +32,13 @@ export function Logo({ href = '/', showText = true, size = 'md' }: LogoProps) {
         `}
       >
         <span className={`icon-lucide ${s.iconFont} text-white`}>
-          shield-check
+          eye
         </span>
       </div>
       {showText && (
-        <span
-          className={`font-mono font-semibold ${s.text} text-white tracking-wide`}
-        >
-          Rdy Vigil
+        <span className={`font-mono font-semibold ${s.text} tracking-wide`}>
+          <span className="text-white">Rdy</span>
+          <span className="text-[var(--accent)]">Vigil</span>
         </span>
       )}
     </div>
