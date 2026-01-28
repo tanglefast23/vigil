@@ -3,9 +3,8 @@
  * Server component that fetches data and renders the dashboard
  */
 
-import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { redirect } from 'next/navigation';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { RecoveryChart } from './components/RecoveryChart';
 import { WorkoutList } from './components/WorkoutList';
 import { SyncButton } from './components/SyncButton';
@@ -19,16 +18,16 @@ import {
 } from '@/lib/data';
 
 export default async function DashboardPage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
 
   // Parallel data fetching for performance
   const [workouts, recoveryData, syncStatus, weeklyStats, latestRecovery] =

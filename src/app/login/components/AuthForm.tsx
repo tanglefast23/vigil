@@ -6,7 +6,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { useRouter } from 'next/navigation';
 
 interface Message {
@@ -22,7 +22,7 @@ export function AuthForm() {
   const [message, setMessage] = useState<Message | null>(null);
 
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseBrowserClient();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

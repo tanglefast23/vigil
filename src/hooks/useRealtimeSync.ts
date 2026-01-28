@@ -6,14 +6,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { useRouter } from 'next/navigation';
 
 export function useRealtimeSync(userId: string) {
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+
     const channel = supabase
       .channel('sync-updates')
       .on(
@@ -40,5 +41,5 @@ export function useRealtimeSync(userId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, router, supabase]);
+  }, [userId, router]);
 }

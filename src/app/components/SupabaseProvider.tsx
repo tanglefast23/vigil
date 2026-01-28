@@ -1,24 +1,18 @@
 /**
  * Supabase Provider Component
  * Provides Supabase client context to the application
+ * Note: With @supabase/ssr, we create clients directly in components
+ * This provider is kept for future extensibility
  */
 
 'use client';
-
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import { useState } from 'react';
 
 interface SupabaseProviderProps {
   children: React.ReactNode;
 }
 
 export function SupabaseProvider({ children }: SupabaseProviderProps) {
-  const [supabaseClient] = useState(() => createClientComponentClient());
-
-  return (
-    <SessionContextProvider supabaseClient={supabaseClient}>
-      {children}
-    </SessionContextProvider>
-  );
+  // With @supabase/ssr, we create clients directly where needed
+  // using createSupabaseBrowserClient() from @/lib/supabase/browser
+  return <>{children}</>;
 }

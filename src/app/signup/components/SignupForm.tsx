@@ -6,7 +6,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { useRouter } from 'next/navigation';
 
 export function SignupForm() {
@@ -18,7 +18,7 @@ export function SignupForm() {
   const [success, setSuccess] = useState(false);
 
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseBrowserClient();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
