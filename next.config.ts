@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ['api.prod.whoop.com'],
+  },
+  // For Vercel Edge Functions compatibility
+  serverExternalPackages: ['crypto'],
 };
 
 export default nextConfig;
