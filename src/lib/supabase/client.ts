@@ -44,14 +44,3 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   },
 });
 
-/**
- * Create a client-safe Supabase instance
- * Use this for client-side operations with anon key
- */
-export function createBrowserClient() {
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !anonKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-  return createClient(supabaseUrl, anonKey);
-}
